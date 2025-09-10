@@ -1,6 +1,30 @@
-# Driver App - React Native Mobile Application
+# 🚛 Transend Driver App
 
-> A comprehensive transportation/logistics driver mobile app built with React Native and Expo, featuring complete API integration, real-time data management, and production-ready backend connectivity.
+A professional React Native mobile application for delivery drivers, built with Expo and integrated with the Transend backend API.
+
+## 📱 **APK Download - PRODUCTION READY**
+
+**🔥 Ready for Installation:** [Download APK](https://expo.dev/accounts/sukesh9595/projects/driver-app/builds/69a378cd-578d-46ee-baf6-db8ece12976c)
+
+## 🎯 **Features**
+
+- ✅ **Driver Dashboard** - Live statistics and job overview
+- ✅ **Job Management** - Accept, track, and complete deliveries
+- ✅ **Real-time Tracking** - GPS location and route optimization
+- ✅ **Profile Management** - Driver details and preferences
+- ✅ **Notifications** - Push notifications for new jobs
+- ✅ **File Upload** - Document and photo handling
+- ✅ **Offline Support** - Works with limited connectivity
+
+## 🛠️ **Technical Stack**
+
+- **Frontend**: React Native 19.0.0 + Expo 53.0.22
+- **Navigation**: React Navigation (Bottom Tabs + Stack)
+- **HTTP Client**: Axios with interceptors
+- **State Management**: React Context API
+- **Maps**: React Native Maps
+- **Build System**: EAS Build (Cloud)
+- **Backend Integration**: Complete API integration with Transend
 
 ## 🚀 **Quick Start**
 
@@ -34,6 +58,37 @@ npm run web       # Web browser
 - **Press 'w'**: Open in web browser
 - **Press 'r'**: Reload app
 - **Press 'm'**: Toggle dev menu
+
+### Building APK
+```bash
+# Login to Expo
+eas login
+
+# Build APK
+eas build --platform android --profile preview
+```
+
+---
+
+## 📚 **Documentation**
+
+All comprehensive documentation is organized in the [`docs/`](./docs/) folder:
+
+### 🔧 **Setup & Configuration**
+- [**API Integration Guide**](./docs/API_INTEGRATION_GUIDE.md) - Complete API setup and usage
+- [**APK Build Guide**](./docs/APK_BUILD_GUIDE.md) - Multiple APK generation methods
+
+### 🛠️ **Troubleshooting**
+- [**APK Crash Fix Guide**](./docs/APK_CRASH_FIX_GUIDE.md) - Fix common APK installation issues
+- [**TurboModule Fix Guide**](./docs/TURBOMODULE_FIX_GUIDE.md) - Resolve native module errors
+
+### 📱 **Mobile Development**
+- [**Mobile Compatibility Guide**](./docs/MOBILE_COMPATIBILITY_GUIDE.md) - Cross-platform considerations
+- [**Mobile Compatibility Implementation**](./docs/MOBILE_COMPATIBILITY_IMPLEMENTATION.md) - Technical implementation details
+
+### 📋 **Project Information**
+- [**Updates Summary**](./docs/UPDATES_SUMMARY.md) - Development progress and changes
+- [**Project Completion Summary**](./docs/PROJECT_COMPLETION_SUMMARY.md) - Final deliverables and success metrics
 
 ---
 
