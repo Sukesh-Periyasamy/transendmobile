@@ -17,6 +17,9 @@
  * @version 1.0.0
  */
 
+// CRITICAL: Import gesture handler first to ensure proper native module initialization
+import 'react-native-gesture-handler';
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';
