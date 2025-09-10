@@ -107,19 +107,19 @@ const SettingsScreen = ({ navigation }) => {
       id: 1,
       title: 'Documents',                     // Driver license, insurance, etc.
       icon: 'document-text',                  // Document icon
-      onPress: () => console.log('Documents pressed'), // Placeholder for documents management
+      onPress: () => navigation.navigate('Documents'), // Navigate to Documents screen
     },
     {
       id: 2,
       title: 'Vehicle Details',              // Vehicle registration, inspection
       icon: 'car',                           // Car icon for vehicle
-      onPress: () => console.log('Vehicle pressed'), // Placeholder for vehicle management
+      onPress: () => navigation.navigate('Vehicle'), // Navigate to Vehicle screen
     },
     {
       id: 3,
       title: 'Bank details',                 // Banking and payment information
       icon: 'card',                          // Card icon for banking
-      onPress: () => console.log('Bank pressed'), // Placeholder for bank details management
+      onPress: () => navigation.navigate('BankDetails'), // Navigate to Bank Details screen
     },
   ];
 

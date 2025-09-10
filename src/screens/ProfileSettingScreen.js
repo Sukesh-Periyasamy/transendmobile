@@ -1,14 +1,16 @@
 /**
- * ProfileSettingScreen.js - User Profile Management
+ * ProfileSettingScreen.js - User Profile Management with API Integration
  * 
  * Provides a comprehensive form for users to edit their profile information
  * including name, email, phone number, and profile image. Features form validation,
- * image picker integration, and real-time state management.
+ * image picker integration, real-time state management, and API updates.
  * 
  * Features:
  * - Profile image upload and editing with camera roll access
  * - Form validation for required fields and email format
  * - Real-time form state management
+ * - API integration for profile updates
+ * - Loading states and error handling
  * - Success/error feedback with alerts
  * - Fixed update button for easy access
  * - Auto-navigation back on successful update
@@ -26,6 +28,7 @@
  * 
  * Data Sources:
  * - Global app context for current user data
+ * - API services for profile updates
  * - Form state management for real-time updates
  * - Image picker for profile photo selection
  * 
@@ -34,7 +37,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TextInput, TouchableOpacity, Image, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -44,8 +47,8 @@ import { colors, commonStyles } from '../styles/commonStyles';
 /**
  * ProfileSettingScreen Component
  * 
- * Profile editing screen with form validation and image upload functionality.
- * Allows users to update their personal information and profile photo.
+ * Profile editing screen with form validation, image upload functionality, and API integration.
+ * Allows users to update their personal information and profile photo with real-time feedback.
  * 
  * @param {Object} props - Component props
  * @param {Object} props.navigation - React Navigation object for screen navigation
@@ -53,20 +56,25 @@ import { colors, commonStyles } from '../styles/commonStyles';
  */
 const ProfileSettingScreen = ({ navigation }) => {
   // Get user data and update function from global context
-  const { user, updateUserProfile } = useApp();
+  const { user, updateUserProfile, isLoading, getError, clearError } = useApp();
   
   /**
    * Form State Management
    * 
-   * Local state to manage form data before submitting to global context.
+   * Local state to manage form data before submitting to API.
    * Initialized with current user data from context.
    */
   const [formData, setFormData] = useState({
-    name: user.name,                       // User's display name
-    email: user.email,                     // Contact email
-    phone: user.phone,                     // Phone number
-    profileImage: user.profileImage,       // Profile photo URI
+    first_name: user?.first_name || '',        // User's first name
+    last_name: user?.last_name || '',          // User's last name
+    email: user?.email || '',                  // Contact email
+    phone: user?.phone || '',                  // Phone number
+    address: user?.address || '',              // Address (optional)
+    profileImage: user?.image || '',           // Profile photo URI
   });
+
+  // Local loading state for form submission
+  const [isUpdating, setIsUpdating] = useState(false);
 
   /**
    * Handle Input Change
@@ -119,16 +127,21 @@ const ProfileSettingScreen = ({ navigation }) => {
   };
 
   /**
-   * Handle Profile Update
+   * Handle Profile Update with API Integration
    * 
-   * Validates form data and submits updates to global context.
+   * Validates form data and submits updates via API.
    * Includes validation for required fields and email format.
-   * Shows success/error feedback and navigates back on success.
+   * Shows loading state and provides success/error feedback.
    */
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     // Validate required fields
-    if (!formData.name.trim()) {
-      Alert.alert('Error', 'Please enter your name');
+    if (!formData.first_name.trim()) {
+      Alert.alert('Error', 'Please enter your first name');
+      return;
+    }
+
+    if (!formData.last_name.trim()) {
+      Alert.alert('Error', 'Please enter your last name');
       return;
     }
 
@@ -149,11 +162,41 @@ const ProfileSettingScreen = ({ navigation }) => {
       return;
     }
 
-    // Update user profile in global context and show success alert
-    updateUserProfile(formData);
-    Alert.alert('Success', 'Profile updated successfully!', [
-      { text: 'OK', onPress: () => navigation.goBack() }
-    ]);
+    setIsUpdating(true);
+    clearError('profileUpdate');
+
+    try {
+      // Prepare update data for API (excluding profileImage for now)
+      const updateData = {
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        address: formData.address.trim(),
+      };
+
+      // Call API to update profile
+      const success = await updateUserProfile(updateData);
+
+      if (success) {
+        Alert.alert(
+          'Success', 
+          'Profile updated successfully!', 
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
+      } else {
+        const error = getError('profileUpdate');
+        Alert.alert(
+          'Error', 
+          error || 'Failed to update profile. Please try again.'
+        );
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -167,7 +210,11 @@ const ProfileSettingScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.profileImageContainer} onPress={handleImagePicker}>
               {/* Current profile image */}
               <Image
-                source={{ uri: formData.profileImage }}
+                source={
+                  formData.profileImage && formData.profileImage.trim() !== '' 
+                    ? { uri: formData.profileImage }
+                    : require('../../assets/images/profile/p1.png')
+                }
                 style={styles.profileImage}
               />
               {/* Edit icon overlay for image upload */}
@@ -180,14 +227,26 @@ const ProfileSettingScreen = ({ navigation }) => {
           {/* Form Section with all input fields */}
           <View style={styles.formContainer}>
             
-            {/* User Name Input */}
+            {/* First Name Input */}
             <View style={styles.formGroup}>
-              <Text style={styles.label}>User Name</Text>
+              <Text style={styles.label}>First Name</Text>
               <TextInput
                 style={styles.input}
-                value={formData.name}
-                onChangeText={(value) => handleInputChange('name', value)}
-                placeholder="Enter your name"
+                value={formData.first_name}
+                onChangeText={(value) => handleInputChange('first_name', value)}
+                placeholder="Enter your first name"
+                placeholderTextColor={colors.textLight}
+              />
+            </View>
+
+            {/* Last Name Input */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Last Name</Text>
+              <TextInput
+                style={styles.input}
+                value={formData.last_name}
+                onChangeText={(value) => handleInputChange('last_name', value)}
+                placeholder="Enter your last name"
                 placeholderTextColor={colors.textLight}
               />
             </View>
@@ -218,14 +277,39 @@ const ProfileSettingScreen = ({ navigation }) => {
                 autoCapitalize="none"         // Disable auto-capitalization for emails
               />
             </View>
+
+            {/* Address Input (optional) */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Address (Optional)</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.address}
+                onChangeText={(value) => handleInputChange('address', value)}
+                placeholder="Enter your address"
+                placeholderTextColor={colors.textLight}
+                multiline={true}
+                numberOfLines={3}
+              />
+            </View>
           </View>
         </View>
       </ScrollView>
 
       {/* Fixed Update Button at bottom of screen */}
       <View style={styles.fixedButtonContainer}>
-        <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
-          <Text style={styles.updateButtonText}>Update</Text>
+        <TouchableOpacity 
+          style={[
+            styles.updateButton,
+            (isUpdating || isLoading('profileUpdate')) && styles.disabledButton
+          ]} 
+          onPress={handleUpdate}
+          disabled={isUpdating || isLoading('profileUpdate')}
+        >
+          {(isUpdating || isLoading('profileUpdate')) ? (
+            <ActivityIndicator size="small" color={colors.white} />
+          ) : (
+            <Text style={styles.updateButtonText}>Update</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -337,6 +421,18 @@ const styles = StyleSheet.create({
     paddingVertical: 16,                        // Comfortable touch target
     justifyContent: 'center',                   // Center text
     alignItems: 'center',
+  },
+
+  // Text area input for address
+  textArea: {
+    height: 80,                                 // Taller height for multi-line
+    textAlignVertical: 'top',                   // Start text at top
+    paddingTop: 12,                             // Top padding for multi-line
+  },
+
+  // Disabled button state
+  disabledButton: {
+    opacity: 0.6,                               // Reduced opacity for disabled state
   },
   
   // Update button text styling
